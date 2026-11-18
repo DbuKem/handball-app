@@ -84,7 +84,7 @@
                     </button>
                 </form>
             </div>
-            <div class="text-center text-[10px] text-zinc-400 pb-2">V2.0</div>
+            <div class="text-center text-[10px] text-zinc-400 pb-2">V2.0 • Online Sync</div>
         </div>
 
         <!-- TEAM SETUP SCREEN -->
@@ -98,15 +98,18 @@
                     <button onclick="logout()" class="text-xs text-rose-500 font-semibold px-3 py-1.5 rounded-xl bg-rose-500/10">Profil ändern</button>
                 </div>
 
-                <!-- VERFÜGBARE VEREINE (GANZ OBEN ZUM AUSWÄHLEN!) -->
+                <!-- VERFÜGBARE VEREINE -->
                 <div class="p-4 rounded-2xl space-y-3 border border-blue-500/30 bg-blue-500/5">
-                    <h3 class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Bestehende Vereine (Direkt beitreten)</h3>
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Online-Vereine (Live)</h3>
+                        <button onclick="loadFromCloud(true)" class="text-[11px] text-blue-500 underline font-medium">Aktualisieren</button>
+                    </div>
                     <div id="team-list" class="space-y-2"></div>
                 </div>
 
                 <!-- NEUEN VEREIN GRÜNDEN -->
                 <div class="p-5 rounded-2xl space-y-4 border border-zinc-300 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 shadow-md">
-                    Oder <h3 class="text-sm font-semibold text-zinc-700 dark:text-zinc-300 inline uppercase tracking-wider">Neuen Verein gründen</h3>
+                    <h3 class="text-sm font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">Neuen Verein gründen</h3>
                     <div class="space-y-3 pt-2">
                         <div>
                             <label class="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Vereins- / Mannschaftsname</label>
@@ -230,7 +233,7 @@
                         <div class="flex justify-between items-center">
                             <h3 id="attendance-title" class="text-sm font-semibold">Wer kommt? (Live-Team)</h3>
                             <span class="text-xs text-emerald-500 flex items-center gap-1 font-medium">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Auto-Sync
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Cloud-Sync aktiv
                             </span>
                         </div>
                         <div id="team-attendance-list" class="space-y-2"></div>
@@ -346,7 +349,7 @@
                     </div>
 
                     <div class="text-center pb-4">
-                        <span class="text-[10px] text-zinc-400 font-medium">V2.0</span>
+                        <span class="text-[10px] text-zinc-400 font-medium">V2.0 • Online Sync</span>
                     </div>
 
                     <button onclick="logout()" class="w-full bg-zinc-200 dark:bg-zinc-900 border border-rose-500/30 text-rose-500 font-semibold py-3.5 rounded-2xl text-sm transition hover:bg-rose-500/10">
@@ -405,7 +408,7 @@
 
     </div>
 
-    <!-- LOGIC SCRIPT V2.0 -->
+    <!-- LOGIC SCRIPT V2.0 MIT ECHTEM PUBLIC CLOUD SYNC -->
     <script>
         let selectedEmoji = '⚽️';
         let currentUser = null;
@@ -413,39 +416,78 @@
         let activeTrainingDay = 1;
         let isDarkMode = localStorage.getItem('handball_dark') !== 'false';
 
-        const SYNC_KEY = 'handball_shared_data_v7';
+        // Wir nutzen eine kostenlose, öffentliche JSON-API als gemeinsamer Cloud-Server für alle Handys
+        const CLOUD_URL = 'https://api.npoint.io/db4e8cb2f575a7c295ea'; // Öffentlicher geteilter Speicher
         
-        let localData = JSON.parse(localStorage.getItem(SYNC_KEY) || JSON.stringify({
+        let globalData = {
             teams: [],
             members: {},
             events: {}
-        }));
+        };
 
-        let teamsDB = localData.teams;
-        let membersDB = localData.members;
-        let eventsDB = localData.events;
+        let teamsDB = [];
+        let membersDB = {};
+        let eventsDB = {};
 
-        function loadFromCloud() {
-            const fresh = localStorage.getItem(SYNC_KEY);
-            if (fresh) {
-                localData = JSON.parse(fresh);
-                teamsDB = localData.teams || [];
-                membersDB = localData.members || {};
-                eventsDB = localData.events || {};
+        async function loadFromCloud(showAlert = false) {
+            try {
+                const response = await fetch(CLOUD_URL + '?t=' + Date.now()); // Cache umgehen
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.teams) {
+                        globalData = data;
+                        teamsDB = data.teams || [];
+                        membersDB = data.members || {};
+                        eventsDB = data.events || {};
+                        
+                        if (currentTeamId) {
+                            renderAttendance();
+                            renderCalendarEvents();
+                        }
+                        if (!document.getElementById('team-screen').classList.contains('hidden')) {
+                            renderTeamList();
+                        }
+                        if (showAlert) {
+                            alert("Daten erfolgreich aus der Cloud aktualisiert!");
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log("Cloud-Sync Offline-Modus:", e);
+                // Fallback auf lokales localStorage falls kein Netz
+                const local = localStorage.getItem('handball_fallback_v7');
+                if (local) {
+                    globalData = JSON.parse(local);
+                    teamsDB = globalData.teams || [];
+                    membersDB = globalData.members || {};
+                    eventsDB = globalData.events || {};
+                }
             }
         }
 
-        function saveToCloud() {
-            localData.teams = teamsDB;
-            localData.members = membersDB;
-            localData.events = eventsDB;
-            localStorage.setItem(SYNC_KEY, JSON.stringify(localData));
+        async function saveToCloud() {
+            globalData.teams = teamsDB;
+            globalData.members = membersDB;
+            globalData.events = eventsDB;
+            
+            // Lokalen Fallback sichern
+            localStorage.setItem('handball_fallback_v7', JSON.stringify(globalData));
+
+            try {
+                await fetch(CLOUD_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(globalData)
+                });
+            } catch (e) {
+                console.log("Konnte nicht in Cloud schreiben:", e);
+            }
         }
 
-        window.onload = function() {
+        window.onload = async function() {
             applyTheme();
             checkButtermarktEvents();
-            loadFromCloud();
+            await loadFromCloud();
             
             const today = new Date().getDay();
             if (today === 4 || today === 5 || today === 6 || today === 0) {
@@ -454,12 +496,9 @@
                 activeTrainingDay = 1;
             }
 
-            setInterval(() => {
-                loadFromCloud();
-                if (currentTeamId) {
-                    renderAttendance();
-                    renderCalendarEvents();
-                }
+            // Alle 3 Sekunden automatisch im Hintergrund die Cloud abfragen
+            setInterval(async () => {
+                await loadFromCloud();
             }, 3000);
 
             const savedUser = localStorage.getItem('handball_current_user_v7');
@@ -574,8 +613,8 @@
             openTeamSetup();
         }
 
-        function openTeamSetup() {
-            loadFromCloud();
+        async function openTeamSetup() {
+            await loadFromCloud();
             document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('team-screen').classList.remove('hidden');
             document.getElementById('main-content').classList.add('hidden');
@@ -583,10 +622,9 @@
         }
 
         function renderTeamList() {
-            loadFromCloud();
             const listEl = document.getElementById('team-list');
             if (!teamsDB || teamsDB.length === 0) {
-                listEl.innerHTML = `<div class="text-xs text-zinc-500 dark:text-zinc-400 text-center py-2">Noch kein Verein vorhanden. Grüne unten deinen ersten Verein!</div>`;
+                listEl.innerHTML = `<div class="text-xs text-zinc-500 dark:text-zinc-400 text-center py-2">Noch kein Verein online. Grüne unten deinen ersten Verein!</div>`;
                 return;
             }
             listEl.innerHTML = teamsDB.map(t => {
@@ -606,11 +644,11 @@
             }).join('');
         }
 
-        function createTeam() {
+        async function createTeam() {
             const name = document.getElementById('new-team-name').value;
             if (!name) return alert('Bitte Vereinsnamen eingeben.');
             
-            loadFromCloud();
+            await loadFromCloud();
             const newTeam = {
                 id: 'team_' + Date.now(),
                 name: name,
@@ -628,7 +666,7 @@
                 { id: '2', title: `Training (${newTeam.t2Day})`, date: `${newTeam.t2Day} • ${newTeam.t2Time}`, location: newTeam.hall }
             ];
             
-            saveToCloud();
+            await saveToCloud();
             joinTeam(newTeam.id);
         }
 
@@ -668,8 +706,8 @@
             initMainApp();
         }
 
-        function initMainApp() {
-            loadFromCloud();
+        async function initMainApp() {
+            await loadFromCloud();
             const switcher = document.getElementById('team-switcher');
             switcher.innerHTML = currentUser.teams.map(tId => {
                 const t = teamsDB.find(x => x.id === tId);
@@ -713,7 +751,7 @@
             if (!membersDB[currentTeam.id][currentUser.email].t1Transport) membersDB[currentTeam.id][currentUser.email].t1Transport = 'Fahrrad';
             if (!membersDB[currentTeam.id][currentUser.email].t2Transport) membersDB[currentTeam.id][currentUser.email].t2Transport = 'Fahrrad';
             
-            saveToCloud();
+            await saveToCloud();
 
             const currentTransport = activeTrainingDay === 1 ? membersDB[currentTeam.id][currentUser.email].t1Transport : membersDB[currentTeam.id][currentUser.email].t2Transport;
             updateTransportUI(currentTransport);
@@ -721,14 +759,14 @@
             renderCalendarEvents();
         }
 
-        function setTransport(mode) {
-            loadFromCloud();
+        async function setTransport(mode) {
+            await loadFromCloud();
             if (activeTrainingDay === 1) {
                 membersDB[currentTeamId][currentUser.email].t1Transport = mode;
             } else {
                 membersDB[currentTeamId][currentUser.email].t2Transport = mode;
             }
-            saveToCloud();
+            await saveToCloud();
             updateTransportUI(mode);
             renderAttendance();
         }
@@ -788,18 +826,17 @@
             `).join('');
         }
 
-        function updateProfileName(newName) {
+        async function updateProfileName(newName) {
             if(!newName) return;
             currentUser.name = newName;
             localStorage.setItem('handball_current_user_v7', JSON.stringify(currentUser));
-            initMainApp();
+            await initMainApp();
         }
 
-        function changeUserEmoji(emoji) {
+        async function changeUserEmoji(emoji) {
             currentUser.emoji = emoji;
-            localStorage.setItem('handball_current_user_v7', JSON.stringify(emoji)); // gespeichert in user object
             localStorage.setItem('handball_current_user_v7', JSON.stringify(currentUser));
-            initMainApp();
+            await initMainApp();
         }
 
         function openNewEventModal() {
@@ -810,14 +847,15 @@
             document.getElementById('event-modal').classList.add('hidden');
         }
 
-        function saveNewEvent() {
+        async function saveNewEvent() {
             const title = document.getElementById('modal-event-title').value;
             const date = document.getElementById('modal-event-date').value;
             const location = document.getElementById('modal-event-location').value;
 
+            await loadFromCloud();
             if (!eventsDB[currentTeamId]) eventsDB[currentTeamId] = [];
             eventsDB[currentTeamId].push({ id: 'ev_' + Date.now(), title, date, location });
-            saveToCloud();
+            await saveToCloud();
 
             closeNewEventModal();
             renderCalendarEvents();
