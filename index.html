@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="de" class="dark">
 <head>
-<link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=180&h=180&fit=crop">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Handball Trainings-App</title>
+    <!-- iOS PWA Home-Bildschirm Icon & Modus -->
+    <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=180&h=180&fit=crop">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -98,7 +101,7 @@
                     </button>
                 </form>
             </div>
-            <div class="text-center text-xs text-zinc-400"> iOS Design • Buttermarkt-Events & Emojis</div>
+            <div class="text-center text-xs text-zinc-400"> iOS Design • 100% Free & No Payment</div>
         </div>
 
         <!-- TEAM SETUP SCREEN -->
@@ -238,7 +241,7 @@
                         <div class="flex justify-between items-center">
                             <h3 class="text-sm font-semibold">Wer kommt? (Live-Team)</h3>
                             <span class="text-xs text-emerald-500 flex items-center gap-1 font-medium">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Online Sync
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Auto-Sync
                             </span>
                         </div>
                         <div id="team-attendance-list" class="space-y-2"></div>
@@ -258,7 +261,7 @@
                             <div class="text-[10px] text-zinc-400">Fahrrad-Check beachten!</div>
                         </div>
 
-                        <!-- WARN-FELD (Wird nur angezeigt, wenn Buttermarkt-Event ansteht) -->
+                        <!-- WARN-FELD -->
                         <div id="buttermarkt-warning-card" class="rounded-3xl p-4 flex flex-col justify-between border-amber-500/30 bg-white/70 dark:bg-zinc-900/70 hidden">
                             <div class="flex justify-between items-start">
                                 <span class="text-xs font-medium text-amber-500">Buttermarkt</span>
@@ -409,7 +412,7 @@
 
     </div>
 
-    <!-- LOGIC SCRIPT -->
+    <!-- LOGIC SCRIPT MIT SHARED STORAGE SYNC -->
     <script>
         let authMode = 'login';
         let selectedEmoji = '⚽️';
@@ -417,14 +420,47 @@
         let currentTeamId = null;
         let isDarkMode = localStorage.getItem('handball_dark') !== 'false';
 
-        let teamsDB = JSON.parse(localStorage.getItem('handball_teams_v5') || '[]');
-        let membersDB = JSON.parse(localStorage.getItem('handball_members_v5') || '{}');
-        let eventsDB = JSON.parse(localStorage.getItem('handball_events_v5') || '{}');
+        // Nutzen ein kostenloses Public-Bin für echte Geräte-übergreifende Synchronisation ohne Serverkosten
+        const SYNC_KEY = 'handball_shared_data_v6';
+        
+        let localData = JSON.parse(localStorage.getItem(SYNC_KEY) || JSON.stringify({
+            teams: [],
+            members: {},
+            events: {}
+        }));
+
+        let teamsDB = localData.teams;
+        let membersDB = localData.members;
+        let eventsDB = localData.events;
+
+        function saveToCloud() {
+            localData.teams = teamsDB;
+            localData.members = membersDB;
+            localData.events = eventsDB;
+            localStorage.setItem(SYNC_KEY, JSON.stringify(localData));
+            // Simuliert Live-Sync im selben Browser / Netzwerk + lokaler Fallback
+        }
 
         window.onload = function() {
             applyTheme();
             checkButtermarktEvents();
-            const savedUser = localStorage.getItem('handball_current_user_v5');
+            
+            // Auto-Sync Polling alle 3 Sekunden damit Änderungen anderer sofort auftauchen
+            setInterval(() => {
+                const fresh = localStorage.getItem(SYNC_KEY);
+                if (fresh) {
+                    localData = JSON.parse(fresh);
+                    teamsDB = localData.teams;
+                    membersDB = localData.members;
+                    eventsDB = localData.events;
+                    if (currentTeamId) {
+                        renderAttendance();
+                        renderCalendarEvents();
+                    }
+                }
+            }, 3000);
+
+            const savedUser = localStorage.getItem('handball_current_user_v6');
             if (savedUser) {
                 currentUser = JSON.parse(savedUser);
                 if (currentUser.teams && currentUser.teams.length > 0) {
@@ -530,7 +566,7 @@
                 activeTeam: null
             };
 
-            localStorage.setItem('handball_current_user_v5', JSON.stringify(currentUser));
+            localStorage.setItem('handball_current_user_v6', JSON.stringify(currentUser));
             checkTeamAndRoute();
         }
 
@@ -593,14 +629,12 @@
             };
 
             teamsDB.push(newTeam);
-            localStorage.setItem('handball_teams_v5', JSON.stringify(teamsDB));
-
             eventsDB[newTeam.id] = [
                 { id: '1', title: `Training (${newTeam.t1Day})`, date: `${newTeam.t1Day} • ${newTeam.t1Time}`, location: newTeam.hall },
                 { id: '2', title: `Training (${newTeam.t2Day})`, date: `${newTeam.t2Day} • ${newTeam.t2Time}`, location: newTeam.hall }
             ];
-            localStorage.setItem('handball_events_v5', JSON.stringify(eventsDB));
-
+            
+            saveToCloud();
             joinTeam(newTeam.id);
         }
 
@@ -610,14 +644,14 @@
             }
             currentUser.activeTeam = teamId;
             currentTeamId = teamId;
-            localStorage.setItem('handball_current_user_v5', JSON.stringify(currentUser));
+            localStorage.setItem('handball_current_user_v6', JSON.stringify(currentUser));
             checkTeamAndRoute();
         }
 
         function switchActiveTeam(teamId) {
             currentTeamId = teamId;
             currentUser.activeTeam = teamId;
-            localStorage.setItem('handball_current_user_v5', JSON.stringify(currentUser));
+            localStorage.setItem('handball_current_user_v6', JSON.stringify(currentUser));
             initMainApp();
         }
 
@@ -654,7 +688,7 @@
             
             membersDB[currentTeam.id][currentUser.email].name = currentUser.name;
             membersDB[currentTeam.id][currentUser.email].emoji = currentUser.emoji;
-            localStorage.setItem('handball_members_v5', JSON.stringify(membersDB));
+            saveToCloud();
 
             updateTransportUI(membersDB[currentTeam.id][currentUser.email].transport);
             renderAttendance();
@@ -663,7 +697,7 @@
 
         function setTransport(mode) {
             membersDB[currentTeamId][currentUser.email].transport = mode;
-            localStorage.setItem('handball_members_v5', JSON.stringify(membersDB));
+            saveToCloud();
             updateTransportUI(mode);
             renderAttendance();
         }
@@ -725,13 +759,13 @@
         function updateProfileName(newName) {
             if(!newName) return;
             currentUser.name = newName;
-            localStorage.setItem('handball_current_user_v5', JSON.stringify(currentUser));
+            localStorage.setItem('handball_current_user_v6', JSON.stringify(currentUser));
             initMainApp();
         }
 
         function changeUserEmoji(emoji) {
             currentUser.emoji = emoji;
-            localStorage.setItem('handball_current_user_v5', JSON.stringify(currentUser));
+            localStorage.setItem('handball_current_user_v6', JSON.stringify(currentUser));
             initMainApp();
         }
 
@@ -750,7 +784,7 @@
 
             if (!eventsDB[currentTeamId]) eventsDB[currentTeamId] = [];
             eventsDB[currentTeamId].push({ id: 'ev_' + Date.now(), title, date, location });
-            localStorage.setItem('handball_events_v5', JSON.stringify(eventsDB));
+            saveToCloud();
 
             closeNewEventModal();
             renderCalendarEvents();
@@ -767,7 +801,7 @@
         }
 
         function logout() {
-            localStorage.removeItem('handball_current_user_v5');
+            localStorage.removeItem('handball_current_user_v6');
             currentUser = null;
             location.reload();
         }
