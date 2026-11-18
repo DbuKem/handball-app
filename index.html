@@ -426,7 +426,7 @@
         let selectedEmoji = '⚽️';
         let currentUser = null;
         let currentTeamId = null;
-        let activeTrainingDay = 1; // 1 = Erstes Training, 2 = Zweites Training
+        let activeTrainingDay = 1;
         let isDarkMode = localStorage.getItem('handball_dark') !== 'false';
 
         const SYNC_KEY = 'handball_shared_data_v7';
@@ -441,6 +441,16 @@
         let membersDB = localData.members;
         let eventsDB = localData.events;
 
+        function loadFromCloud() {
+            const fresh = localStorage.getItem(SYNC_KEY);
+            if (fresh) {
+                localData = JSON.parse(fresh);
+                teamsDB = localData.teams || [];
+                membersDB = localData.members || {};
+                eventsDB = localData.events || {};
+            }
+        }
+
         function saveToCloud() {
             localData.teams = teamsDB;
             localData.members = membersDB;
@@ -451,26 +461,20 @@
         window.onload = function() {
             applyTheme();
             checkButtermarktEvents();
+            loadFromCloud();
             
-            // Automatischer Tagessprung je nach Wochentag (Nach dem Training schaltet es auf das nächste)
-            const today = new Date().getDay(); // 0=So, 1=Mo, 2=Di, 3=Mi, 4=Do, 5=Fr, 6=Sa
+            const today = new Date().getDay();
             if (today === 4 || today === 5 || today === 6 || today === 0) {
-                activeTrainingDay = 2; // Nach Donnerstag/Fr/Sa/So zeigt er direkt das nächste (1. Training der neuen Woche)
+                activeTrainingDay = 2;
             } else {
                 activeTrainingDay = 1;
             }
 
             setInterval(() => {
-                const fresh = localStorage.getItem(SYNC_KEY);
-                if (fresh) {
-                    localData = JSON.parse(fresh);
-                    teamsDB = localData.teams;
-                    membersDB = localData.members;
-                    eventsDB = localData.events;
-                    if (currentTeamId) {
-                        renderAttendance();
-                        renderCalendarEvents();
-                    }
+                loadFromCloud();
+                if (currentTeamId) {
+                    renderAttendance();
+                    renderCalendarEvents();
                 }
             }, 3000);
 
@@ -588,9 +592,7 @@
             document.getElementById('auth-screen').classList.add('hidden');
             
             if (!currentUser.teams || currentUser.teams.length === 0) {
-                document.getElementById('team-screen').classList.remove('hidden');
-                document.getElementById('main-content').classList.add('hidden');
-                renderTeamList();
+                openTeamSetup();
             } else {
                 document.getElementById('team-screen').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
@@ -599,19 +601,21 @@
         }
 
         function openTeamSetup() {
+            loadFromCloud();
             document.getElementById('team-screen').classList.remove('hidden');
             document.getElementById('main-content').classList.add('hidden');
             renderTeamList();
         }
 
         function renderTeamList() {
+            loadFromCloud();
             const listEl = document.getElementById('team-list');
-            if (teamsDB.length === 0) {
+            if (!teamsDB || teamsDB.length === 0) {
                 listEl.innerHTML = `<div class="text-xs text-zinc-500 text-center py-4">Noch kein Verein vorhanden. Grüne oben deinen ersten Verein!</div>`;
                 return;
             }
             listEl.innerHTML = teamsDB.map(t => {
-                const isMember = currentUser.teams.includes(t.id);
+                const isMember = currentUser.teams && currentUser.teams.includes(t.id);
                 return `
                     <div class="p-4 rounded-2xl flex justify-between items-center border border-zinc-300 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50">
                         <div>
@@ -631,6 +635,7 @@
             const name = document.getElementById('new-team-name').value;
             if (!name) return alert('Bitte Vereinsnamen eingeben.');
             
+            loadFromCloud();
             const newTeam = {
                 id: 'team_' + Date.now(),
                 name: name,
@@ -689,6 +694,7 @@
         }
 
         function initMainApp() {
+            loadFromCloud();
             const switcher = document.getElementById('team-switcher');
             switcher.innerHTML = currentUser.teams.map(tId => {
                 const t = teamsDB.find(x => x.id === tId);
@@ -742,6 +748,7 @@
         }
 
         function setTransport(mode) {
+            loadFromCloud();
             if (activeTrainingDay === 1) {
                 membersDB[currentTeamId][currentUser.email].t1Transport = mode;
             } else {
