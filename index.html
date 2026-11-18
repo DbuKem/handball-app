@@ -101,7 +101,7 @@
                     </button>
                 </form>
             </div>
-            <div class="text-center text-xs text-zinc-400"> iOS Design • 100% Free & No Payment</div>
+            <div class="text-center text-[10px] text-zinc-400 pb-2">V2.0</div>
         </div>
 
         <!-- TEAM SETUP SCREEN -->
@@ -126,8 +126,8 @@
                             <div>
                                 <label class="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">1. Training (Tag & Zeit)</label>
                                 <select id="t1-day" class="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/60 rounded-xl px-2 py-2 text-xs mb-1">
-                                    <option value="Montag">Montag</option>
-                                    <option value="Dienstag" selected>Dienstag</option>
+                                    <option value="Montag" selected>Montag</option>
+                                    <option value="Dienstag">Dienstag</option>
                                     <option value="Mittwoch">Mittwoch</option>
                                     <option value="Donnerstag">Donnerstag</option>
                                     <option value="Freitag">Freitag</option>
@@ -189,7 +189,7 @@
             </header>
 
             <!-- SCROLLABLE VIEWS -->
-            <main class="flex-1 overflow-y-auto no-scrollbar relative pb-24">
+            <main class="flex-1 overflow-y-auto no-scrollbar relative pb-28">
 
                 <!-- VIEW 1: HOME -->
                 <div id="view-home" class="p-6 space-y-6 view-section">
@@ -201,27 +201,31 @@
                                 Hallo <span id="user-display-name">David</span> <span id="user-display-emoji" class="cursor-pointer" onclick="switchTab('me')">⚽️</span>
                             </h2>
                         </div>
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">2x wöchentlich</span>
+                        <!-- Tag-Auswahl Umschalter (Mo / Do) -->
+                        <div class="flex bg-zinc-200 dark:bg-zinc-800 p-1 rounded-xl">
+                            <button onclick="setActiveTrainingDay(1)" id="day-btn-1" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 text-white transition">1. Training</button>
+                            <button onclick="setActiveTrainingDay(2)" id="day-btn-2" class="px-3 py-1.5 text-xs font-bold rounded-lg text-zinc-500 dark:text-zinc-400 transition">2. Training</button>
+                        </div>
                     </div>
 
-                    <!-- Nächstes Training -->
+                    <!-- Nächstes Training (Ausgewählter Tag) -->
                     <div class="rounded-3xl p-5 space-y-4 shadow-xl border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl">
                         <div class="flex justify-between items-start">
                             <div>
-                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30">Training</span>
-                                <h3 class="text-lg font-bold mt-2" id="next-t1-date">Dienstag & Donnerstag</h3>
+                                <span id="training-day-badge" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30">Training</span>
+                                <h3 class="text-lg font-bold mt-2" id="next-t-title">Montag • 18:30 Uhr</h3>
                                 <p class="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1 mt-0.5">
-                                    <i class="fa-solid fa-location-dot text-blue-500"></i> <span id="next-t1-hall">Ludwig-Jahn-Halle, Kempen</span>
+                                    <i class="fa-solid fa-location-dot text-blue-500"></i> <span id="next-t-hall">Ludwig-Jahn-Halle, Kempen</span>
                                 </p>
                                 <p class="text-[11px] text-zinc-400 dark:text-zinc-500 flex items-center gap-1 mt-0.5">
-                                    <i class="fa-solid fa-car-side text-emerald-500"></i> Treff: <span id="next-t1-meet">Sportpark-Parkplatz Süd</span>
+                                    <i class="fa-solid fa-car-side text-emerald-500"></i> Treff: <span id="next-t-meet">Sportpark-Parkplatz Süd</span>
                                 </p>
                             </div>
                         </div>
 
-                        <!-- Transport Auswahl -->
+                        <!-- Transport Auswahl für den aktiven Tag -->
                         <div class="pt-2 border-t border-zinc-200 dark:border-zinc-800/80">
-                            <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Wie kommst du zum Training?</p>
+                            <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Wie kommst du zu diesem Training?</p>
                             <div class="grid grid-cols-3 gap-2">
                                 <button onclick="setTransport('Fahrrad')" id="btn-bike" class="py-2.5 px-3 rounded-xl border border-zinc-300 dark:border-zinc-700/60 bg-zinc-100 dark:bg-zinc-900/60 text-xs font-medium flex items-center justify-center gap-1.5 transition">
                                     <i class="fa-solid fa-bicycle text-emerald-500"></i> Fahrrad
@@ -236,10 +240,10 @@
                         </div>
                     </div>
 
-                    <!-- Online Team Sichtbarkeit -->
+                    <!-- Online Team Sichtbarkeit für den gewählten Tag -->
                     <div class="rounded-3xl p-5 space-y-3 border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl">
                         <div class="flex justify-between items-center">
-                            <h3 class="text-sm font-semibold">Wer kommt? (Live-Team)</h3>
+                            <h3 id="attendance-title" class="text-sm font-semibold">Wer kommt? (Live-Team)</h3>
                             <span class="text-xs text-emerald-500 flex items-center gap-1 font-medium">
                                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Auto-Sync
                             </span>
@@ -356,6 +360,10 @@
                         </p>
                     </div>
 
+                    <div class="text-center pb-4">
+                        <span class="text-[10px] text-zinc-400 font-medium">V2.0</span>
+                    </div>
+
                     <button onclick="logout()" class="w-full bg-zinc-200 dark:bg-zinc-900 border border-rose-500/30 text-rose-500 font-semibold py-3.5 rounded-2xl text-sm transition hover:bg-rose-500/10">
                         Aus dem Konto abmelden
                     </button>
@@ -412,16 +420,16 @@
 
     </div>
 
-    <!-- LOGIC SCRIPT MIT SHARED STORAGE SYNC -->
+    <!-- LOGIC SCRIPT V2.0 -->
     <script>
         let authMode = 'login';
         let selectedEmoji = '⚽️';
         let currentUser = null;
         let currentTeamId = null;
+        let activeTrainingDay = 1; // 1 = Erstes Training, 2 = Zweites Training
         let isDarkMode = localStorage.getItem('handball_dark') !== 'false';
 
-        // Nutzen ein kostenloses Public-Bin für echte Geräte-übergreifende Synchronisation ohne Serverkosten
-        const SYNC_KEY = 'handball_shared_data_v6';
+        const SYNC_KEY = 'handball_shared_data_v7';
         
         let localData = JSON.parse(localStorage.getItem(SYNC_KEY) || JSON.stringify({
             teams: [],
@@ -438,14 +446,20 @@
             localData.members = membersDB;
             localData.events = eventsDB;
             localStorage.setItem(SYNC_KEY, JSON.stringify(localData));
-            // Simuliert Live-Sync im selben Browser / Netzwerk + lokaler Fallback
         }
 
         window.onload = function() {
             applyTheme();
             checkButtermarktEvents();
             
-            // Auto-Sync Polling alle 3 Sekunden damit Änderungen anderer sofort auftauchen
+            // Automatischer Tagessprung je nach Wochentag (Nach dem Training schaltet es auf das nächste)
+            const today = new Date().getDay(); // 0=So, 1=Mo, 2=Di, 3=Mi, 4=Do, 5=Fr, 6=Sa
+            if (today === 4 || today === 5 || today === 6 || today === 0) {
+                activeTrainingDay = 2; // Nach Donnerstag/Fr/Sa/So zeigt er direkt das nächste (1. Training der neuen Woche)
+            } else {
+                activeTrainingDay = 1;
+            }
+
             setInterval(() => {
                 const fresh = localStorage.getItem(SYNC_KEY);
                 if (fresh) {
@@ -460,7 +474,7 @@
                 }
             }, 3000);
 
-            const savedUser = localStorage.getItem('handball_current_user_v6');
+            const savedUser = localStorage.getItem('handball_current_user_v7');
             if (savedUser) {
                 currentUser = JSON.parse(savedUser);
                 if (currentUser.teams && currentUser.teams.length > 0) {
@@ -566,7 +580,7 @@
                 activeTeam: null
             };
 
-            localStorage.setItem('handball_current_user_v6', JSON.stringify(currentUser));
+            localStorage.setItem('handball_current_user_v7', JSON.stringify(currentUser));
             checkTeamAndRoute();
         }
 
@@ -644,14 +658,33 @@
             }
             currentUser.activeTeam = teamId;
             currentTeamId = teamId;
-            localStorage.setItem('handball_current_user_v6', JSON.stringify(currentUser));
-            checkTeamAndRoute();
+            localStorage.setItem('handball_current_user_v7', JSON.stringify(currentUser));
+            
+            document.getElementById('team-screen').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+            initMainApp();
         }
 
         function switchActiveTeam(teamId) {
             currentTeamId = teamId;
             currentUser.activeTeam = teamId;
-            localStorage.setItem('handball_current_user_v6', JSON.stringify(currentUser));
+            localStorage.setItem('handball_current_user_v7', JSON.stringify(currentUser));
+            initMainApp();
+        }
+
+        function setActiveTrainingDay(dayNum) {
+            activeTrainingDay = dayNum;
+            const btn1 = document.getElementById('day-btn-1');
+            const btn2 = document.getElementById('day-btn-2');
+
+            if (dayNum === 1) {
+                btn1.className = "px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 text-white transition";
+                btn2.className = "px-3 py-1.5 text-xs font-bold rounded-lg text-zinc-500 dark:text-zinc-400 transition";
+            } else {
+                btn2.className = "px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 text-white transition";
+                btn1.className = "px-3 py-1.5 text-xs font-bold rounded-lg text-zinc-500 dark:text-zinc-400 transition";
+            }
+
             initMainApp();
         }
 
@@ -674,29 +707,46 @@
             document.getElementById('edit-profile-name').value = currentUser.name;
             document.getElementById('me-emoji').innerText = currentUser.emoji;
 
-            document.getElementById('next-t1-date').innerText = `${currentTeam.t1Day} & ${currentTeam.t2Day} wöchentlich`;
-            document.getElementById('next-t1-hall').innerText = currentTeam.hall;
-            document.getElementById('next-t1-meet').innerText = currentTeam.meet;
+            if (activeTrainingDay === 1) {
+                document.getElementById('next-t-title').innerText = `${currentTeam.t1Day} • ${currentTeam.t1Time}`;
+                document.getElementById('training-day-badge').innerText = "1. Training";
+                document.getElementById('attendance-title').innerText = `Wer kommt? (${currentTeam.t1Day})`;
+            } else {
+                document.getElementById('next-t-title').innerText = `${currentTeam.t2Day} • ${currentTeam.t2Time}`;
+                document.getElementById('training-day-badge').innerText = "2. Training";
+                document.getElementById('attendance-title').innerText = `Wer kommt? (${currentTeam.t2Day})`;
+            }
+
+            document.getElementById('next-t-hall').innerText = currentTeam.hall;
+            document.getElementById('next-t-meet').innerText = currentTeam.meet;
 
             document.getElementById('map-hall-label').innerText = currentTeam.hall;
             document.getElementById('map-meet-label').innerText = currentTeam.meet;
 
             if (!membersDB[currentTeam.id]) membersDB[currentTeam.id] = {};
             if (!membersDB[currentTeam.id][currentUser.email]) {
-                membersDB[currentTeam.id][currentUser.email] = { name: currentUser.name, emoji: currentUser.emoji, transport: 'Fahrrad' };
+                membersDB[currentTeam.id][currentUser.email] = { name: currentUser.name, emoji: currentUser.emoji, t1Transport: 'Fahrrad', t2Transport: 'Fahrrad' };
             }
             
             membersDB[currentTeam.id][currentUser.email].name = currentUser.name;
             membersDB[currentTeam.id][currentUser.email].emoji = currentUser.emoji;
+            if (!membersDB[currentTeam.id][currentUser.email].t1Transport) membersDB[currentTeam.id][currentUser.email].t1Transport = 'Fahrrad';
+            if (!membersDB[currentTeam.id][currentUser.email].t2Transport) membersDB[currentTeam.id][currentUser.email].t2Transport = 'Fahrrad';
+            
             saveToCloud();
 
-            updateTransportUI(membersDB[currentTeam.id][currentUser.email].transport);
+            const currentTransport = activeTrainingDay === 1 ? membersDB[currentTeam.id][currentUser.email].t1Transport : membersDB[currentTeam.id][currentUser.email].t2Transport;
+            updateTransportUI(currentTransport);
             renderAttendance();
             renderCalendarEvents();
         }
 
         function setTransport(mode) {
-            membersDB[currentTeamId][currentUser.email].transport = mode;
+            if (activeTrainingDay === 1) {
+                membersDB[currentTeamId][currentUser.email].t1Transport = mode;
+            } else {
+                membersDB[currentTeamId][currentUser.email].t2Transport = mode;
+            }
             saveToCloud();
             updateTransportUI(mode);
             renderAttendance();
@@ -723,9 +773,10 @@
             const entries = Object.values(teamMembers);
 
             listEl.innerHTML = entries.map(m => {
+                const transport = activeTrainingDay === 1 ? (m.t1Transport || 'Fahrrad') : (m.t2Transport || 'Fahrrad');
                 let badge = '';
-                if (m.transport === 'Fahrrad') badge = '<span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-medium"><i class="fa-solid fa-bicycle"></i> Fahrrad</span>';
-                else if (m.transport === 'Auto') badge = '<span class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-600 dark:text-blue-400 text-[10px] font-medium"><i class="fa-solid fa-car"></i> Auto</span>';
+                if (transport === 'Fahrrad') badge = '<span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-medium"><i class="fa-solid fa-bicycle"></i> Fahrrad</span>';
+                else if (transport === 'Auto') badge = '<span class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-600 dark:text-blue-400 text-[10px] font-medium"><i class="fa-solid fa-car"></i> Auto</span>';
                 else badge = '<span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-600 dark:text-rose-400 text-[10px] font-medium"><i class="fa-solid fa-xmark"></i> Absage</span>';
 
                 return `
@@ -759,13 +810,13 @@
         function updateProfileName(newName) {
             if(!newName) return;
             currentUser.name = newName;
-            localStorage.setItem('handball_current_user_v6', JSON.stringify(currentUser));
+            localStorage.setItem('handball_current_user_v7', JSON.stringify(currentUser));
             initMainApp();
         }
 
         function changeUserEmoji(emoji) {
             currentUser.emoji = emoji;
-            localStorage.setItem('handball_current_user_v6', JSON.stringify(currentUser));
+            localStorage.setItem('handball_current_user_v7', JSON.stringify(currentUser));
             initMainApp();
         }
 
@@ -801,7 +852,7 @@
         }
 
         function logout() {
-            localStorage.removeItem('handball_current_user_v6');
+            localStorage.removeItem('handball_current_user_v7');
             currentUser = null;
             location.reload();
         }
