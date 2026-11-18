@@ -63,41 +63,24 @@
                     <p class="text-sm text-zinc-500 dark:text-zinc-400">Fahrgemeinschaften, 2x Training & Live-Team.</p>
                 </div>
 
-                <!-- Auth Tabs -->
-                <div class="flex bg-zinc-200 dark:bg-zinc-900 p-1 rounded-xl border border-zinc-300 dark:border-zinc-800">
-                    <button onclick="switchAuthMode('login')" id="tab-login" class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-zinc-800 shadow-sm transition">Anmelden</button>
-                    <button onclick="switchAuthMode('register')" id="tab-register" class="flex-1 py-2 text-sm font-semibold rounded-lg text-zinc-500 dark:text-zinc-400 transition">Registrieren</button>
-                </div>
-
                 <!-- Form -->
                 <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4">
-                    <div id="register-fields" class="space-y-4 hidden">
-                        <div>
-                            <label class="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">Dein Name</label>
-                            <input type="text" id="reg-name" placeholder="David" class="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:border-blue-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Wähle dein Spieler-Emoji</label>
-                            <div class="flex gap-2 justify-between" id="emoji-selector">
-                                <button type="button" onclick="selectEmoji('⚽️')" class="emoji-btn w-14 h-14 bg-white dark:bg-zinc-900 border-2 border-blue-600 rounded-xl text-2xl flex items-center justify-center">⚽️</button>
-                                <button type="button" onclick="selectEmoji('🤾‍♂️')" class="emoji-btn w-14 h-14 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl text-2xl flex items-center justify-center">🤾‍♂️</button>
-                                <button type="button" onclick="selectEmoji('🏊')" class="emoji-btn w-14 h-14 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl text-2xl flex items-center justify-center">🏊</button>
-                                <button type="button" onclick="selectEmoji('⚡️')" class="emoji-btn w-14 h-14 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl text-2xl flex items-center justify-center">⚡️</button>
-                            </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">Dein Name</label>
+                        <input type="text" id="reg-name" required placeholder="David" class="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:border-blue-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Wähle dein Spieler-Emoji</label>
+                        <div class="flex gap-2 justify-between" id="emoji-selector">
+                            <button type="button" onclick="selectEmoji('⚽️')" class="emoji-btn w-14 h-14 bg-white dark:bg-zinc-900 border-2 border-blue-600 rounded-xl text-2xl flex items-center justify-center">⚽️</button>
+                            <button type="button" onclick="selectEmoji('🤾‍♂️')" class="emoji-btn w-14 h-14 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl text-2xl flex items-center justify-center">🤾‍♂️</button>
+                            <button type="button" onclick="selectEmoji('🏊')" class="emoji-btn w-14 h-14 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl text-2xl flex items-center justify-center">🏊</button>
+                            <button type="button" onclick="selectEmoji('⚡️')" class="emoji-btn w-14 h-14 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl text-2xl flex items-center justify-center">⚡️</button>
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">E-Mail-Adresse</label>
-                        <input type="email" id="auth-email" required placeholder="david@handball.de" class="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:border-blue-500 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">Passwort</label>
-                        <input type="password" id="auth-password" required placeholder="••••••••" class="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:border-blue-500 text-sm">
-                    </div>
-
-                    <button type="submit" id="auth-submit-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 rounded-xl transition shadow-lg shadow-blue-600/30 text-sm">
-                        Anmelden
+                    <button type="submit" id="auth-submit-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 rounded-xl transition shadow-lg shadow-blue-600/30 text-sm mt-4">
+                        Weiter zu den Vereinen 🚀
                     </button>
                 </form>
             </div>
@@ -105,19 +88,26 @@
         </div>
 
         <!-- TEAM SETUP SCREEN -->
-        <div id="team-screen" class="absolute inset-0 z-40 bg-iosBgLight dark:bg-iosBgDark flex flex-col justify-between px-6 py-12 overflow-y-auto no-scrollbar hidden">
-            <div class="space-y-6 pt-4">
+        <div id="team-screen" class="absolute inset-0 z-40 bg-iosBgLight dark:bg-iosBgDark flex flex-col justify-between px-6 py-10 overflow-y-auto no-scrollbar hidden">
+            <div class="space-y-6 pt-2">
                 <div class="flex justify-between items-center">
                     <div>
                         <h2 class="text-2xl font-bold tracking-tight">Deine Vereine</h2>
-                        <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">Tritt mehreren Vereinen parallel bei oder gründe einen neuen.</p>
+                        <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">Wähle einen bestehenden Verein aus oder gründe einen.</p>
                     </div>
-                    <button onclick="logout()" class="text-xs text-rose-500 font-semibold px-3 py-1.5 rounded-xl bg-rose-500/10">Abmelden</button>
+                    <button onclick="logout()" class="text-xs text-rose-500 font-semibold px-3 py-1.5 rounded-xl bg-rose-500/10">Profil ändern</button>
                 </div>
 
+                <!-- VERFÜGBARE VEREINE (GANZ OBEN ZUM AUSWÄHLEN!) -->
+                <div class="p-4 rounded-2xl space-y-3 border border-blue-500/30 bg-blue-500/5">
+                    <h3 class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Bestehende Vereine (Direkt beitreten)</h3>
+                    <div id="team-list" class="space-y-2"></div>
+                </div>
+
+                <!-- NEUEN VEREIN GRÜNDEN -->
                 <div class="p-5 rounded-2xl space-y-4 border border-zinc-300 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 shadow-md">
-                    <h3 class="text-sm font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Neuen Verein gründen</h3>
-                    <div class="space-y-3">
+                    Oder <h3 class="text-sm font-semibold text-zinc-700 dark:text-zinc-300 inline uppercase tracking-wider">Neuen Verein gründen</h3>
+                    <div class="space-y-3 pt-2">
                         <div>
                             <label class="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Vereins- / Mannschaftsname</label>
                             <input type="text" id="new-team-name" placeholder="z.B. VT Kempen mC-Jugend" class="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/60 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500">
@@ -162,11 +152,6 @@
                             Verein erstellen & beitreten
                         </button>
                     </div>
-                </div>
-
-                <div>
-                    <h3 class="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">Verfügbare Vereine (Beitreten)</h3>
-                    <div id="team-list" class="space-y-2"></div>
                 </div>
             </div>
         </div>
@@ -422,7 +407,6 @@
 
     <!-- LOGIC SCRIPT V2.0 -->
     <script>
-        let authMode = 'login';
         let selectedEmoji = '⚽️';
         let currentUser = null;
         let currentTeamId = null;
@@ -481,14 +465,30 @@
             const savedUser = localStorage.getItem('handball_current_user_v7');
             if (savedUser) {
                 currentUser = JSON.parse(savedUser);
+                document.getElementById('reg-name').value = currentUser.name || '';
+                if (currentUser.emoji) {
+                    selectedEmoji = currentUser.emoji;
+                    updateEmojiUI(selectedEmoji);
+                }
+                
                 if (currentUser.teams && currentUser.teams.length > 0) {
                     currentTeamId = currentUser.activeTeam || currentUser.teams[0];
+                    document.getElementById('auth-screen').classList.add('hidden');
+                    document.getElementById('main-content').classList.remove('hidden');
+                    initMainApp();
+                } else {
+                    openTeamSetup();
                 }
-                checkTeamAndRoute();
             } else {
                 showAuthScreen();
             }
         };
+
+        function showAuthScreen() {
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('team-screen').classList.add('hidden');
+            document.getElementById('main-content').classList.add('hidden');
+        }
 
         function checkButtermarktEvents() {
             const warningCard = document.getElementById('buttermarkt-warning-card');
@@ -540,68 +540,43 @@
             applyTheme();
         }
 
-        function switchAuthMode(mode) {
-            authMode = mode;
-            const regFields = document.getElementById('register-fields');
-            const submitBtn = document.getElementById('auth-submit-btn');
-            const tabLogin = document.getElementById('tab-login');
-            const tabRegister = document.getElementById('tab-register');
-
-            if (mode === 'register') {
-                regFields.classList.remove('hidden');
-                submitBtn.innerText = "Konto erstellen & weiter";
-                tabRegister.className = "flex-1 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-zinc-800 shadow-sm transition";
-                tabLogin.className = "flex-1 py-2 text-sm font-semibold rounded-lg text-zinc-500 dark:text-zinc-400 transition";
-            } else {
-                regFields.classList.add('hidden');
-                submitBtn.innerText = "Anmelden";
-                tabLogin.className = "flex-1 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-zinc-800 shadow-sm transition";
-                tabRegister.className = "flex-1 py-2 text-sm font-semibold rounded-lg text-zinc-500 dark:text-zinc-400 transition";
-            }
-        }
-
         function selectEmoji(emoji) {
             selectedEmoji = emoji;
+            updateEmojiUI(emoji);
+        }
+
+        function updateEmojiUI(emoji) {
             document.querySelectorAll('.emoji-btn').forEach(btn => {
-                btn.classList.remove('border-blue-600');
-                btn.classList.add('border-zinc-300', 'dark:border-zinc-800');
+                if (btn.innerText === emoji) {
+                    btn.classList.remove('border-zinc-300', 'dark:border-zinc-800');
+                    btn.classList.add('border-blue-600');
+                } else {
+                    btn.classList.remove('border-blue-600');
+                    btn.classList.add('border-zinc-300', 'dark:border-zinc-800');
+                }
             });
-            event.currentTarget.classList.remove('border-zinc-300', 'dark:border-zinc-800');
-            event.currentTarget.classList.add('border-blue-600');
         }
 
         function handleAuth(e) {
             e.preventDefault();
-            const email = document.getElementById('auth-email').value;
             const nameInput = document.getElementById('reg-name').value;
-            const name = authMode === 'register' && nameInput ? nameInput : email.split('@')[0];
+            if (!nameInput) return;
 
             currentUser = {
-                email: email,
-                name: name.charAt(0).toUpperCase() + name.slice(1),
+                email: nameInput.toLowerCase().replace(/\s+/g, '') + '@handball.local',
+                name: nameInput.charAt(0).toUpperCase() + nameInput.slice(1),
                 emoji: selectedEmoji,
-                teams: [],
-                activeTeam: null
+                teams: currentUser ? currentUser.teams : [],
+                activeTeam: currentUser ? currentUser.activeTeam : null
             };
 
             localStorage.setItem('handball_current_user_v7', JSON.stringify(currentUser));
-            checkTeamAndRoute();
-        }
-
-        function checkTeamAndRoute() {
-            document.getElementById('auth-screen').classList.add('hidden');
-            
-            if (!currentUser.teams || currentUser.teams.length === 0) {
-                openTeamSetup();
-            } else {
-                document.getElementById('team-screen').classList.add('hidden');
-                document.getElementById('main-content').classList.remove('hidden');
-                initMainApp();
-            }
+            openTeamSetup();
         }
 
         function openTeamSetup() {
             loadFromCloud();
+            document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('team-screen').classList.remove('hidden');
             document.getElementById('main-content').classList.add('hidden');
             renderTeamList();
@@ -611,20 +586,20 @@
             loadFromCloud();
             const listEl = document.getElementById('team-list');
             if (!teamsDB || teamsDB.length === 0) {
-                listEl.innerHTML = `<div class="text-xs text-zinc-500 text-center py-4">Noch kein Verein vorhanden. Grüne oben deinen ersten Verein!</div>`;
+                listEl.innerHTML = `<div class="text-xs text-zinc-500 dark:text-zinc-400 text-center py-2">Noch kein Verein vorhanden. Grüne unten deinen ersten Verein!</div>`;
                 return;
             }
             listEl.innerHTML = teamsDB.map(t => {
-                const isMember = currentUser.teams && currentUser.teams.includes(t.id);
+                const isMember = currentUser && currentUser.teams && currentUser.teams.includes(t.id);
                 return `
-                    <div class="p-4 rounded-2xl flex justify-between items-center border border-zinc-300 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50">
+                    <div class="p-3.5 rounded-2xl flex justify-between items-center border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm">
                         <div>
                             <div class="text-sm font-bold">${t.name}</div>
-                            <div class="text-xs text-zinc-500 dark:text-zinc-400">1: ${t.t1Day} ${t.t1Time} | 2: ${t.t2Day} ${t.t2Time}</div>
+                            <div class="text-[11px] text-zinc-500 dark:text-zinc-400">1: ${t.t1Day} ${t.t1Time} | 2: ${t.t2Day} ${t.t2Time}</div>
                             <div class="text-[10px] text-zinc-400">Halle: ${t.hall}</div>
                         </div>
-                        <button onclick="joinTeam('${t.id}')" class="px-3 py-1.5 rounded-xl text-xs font-semibold ${isMember ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300' : 'bg-blue-600 text-white'}">
-                            ${isMember ? 'Aktiv / Beigetreten' : 'Beitreten'}
+                        <button onclick="joinTeam('${t.id}')" class="px-3.5 py-2 rounded-xl text-xs font-semibold ${isMember ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30' : 'bg-blue-600 text-white shadow-md'}">
+                            ${isMember ? '✓ Beigetreten' : 'Beitreten'}
                         </button>
                     </div>
                 `;
@@ -703,8 +678,7 @@
 
             const currentTeam = teamsDB.find(t => t.id === currentTeamId);
             if (!currentTeam) {
-                currentUser.teams = [];
-                checkTeamAndRoute();
+                openTeamSetup();
                 return;
             }
 
@@ -823,6 +797,7 @@
 
         function changeUserEmoji(emoji) {
             currentUser.emoji = emoji;
+            localStorage.setItem('handball_current_user_v7', JSON.stringify(emoji)); // gespeichert in user object
             localStorage.setItem('handball_current_user_v7', JSON.stringify(currentUser));
             initMainApp();
         }
@@ -861,7 +836,7 @@
         function logout() {
             localStorage.removeItem('handball_current_user_v7');
             currentUser = null;
-            location.reload();
+            showAuthScreen();
         }
     </script>
 </body>
