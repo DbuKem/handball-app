@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Handball Trainings-App</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        iosBgDark: '#000000',
+                        iosBgLight: '#f2f2f7',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Apple SF Pro Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap');
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-nav-dark {
+            background: rgba(28, 28, 30, 0.85);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-top: 0.5px solid rgba(255, 255, 255, 0.15);
+        }
+        .glass-nav-light {
+            background: rgba(249, 249, 249, 0.85);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-top: 0.5px solid rgba(0, 0, 0, 0.1);
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="flex flex-col h-[100dvh] overflow-hidden select-none bg-iosBgLight dark:bg-iosBgDark text-zinc-900 dark:text-zinc-100 transition-colors duration-300">
+
+    <!-- APP CONTAINER -->
+    <div id="app" class="flex-1 flex flex-col relative overflow-hidden max-w-md mx-auto w-full">
+
+        <!-- AUTH SCREEN -->
+        <div id="auth-screen" class="absolute inset-0 z-50 bg-iosBgLight dark:bg-iosBgDark flex flex-col justify-between px-6 py-12 overflow-y-auto no-scrollbar">
+            <div class="space-y-6 pt-6">
+                <div class="text-center space-y-2">
+                    <div class="w-20 h-20 bg-blue-600 rounded-3xl mx-auto flex items-center justify-center text-4xl shadow-lg shadow-blue-500/30 text-white">
+                        🤾‍♂️
+                    </div>
+                    <h1 class="text-2xl font-bold tracking-tight">Handball Team-Planner</h1>
+                    <p class="text-sm text-zinc-500 dark:text-zinc-400">Fahrgemeinschaften, 2x Training & Live-Team.</p>
+                </div>
+
+                <!-- Auth Tabs -->
+                <div class="flex bg-zinc-200 dark:bg-zinc-900 p-1 rounded-xl border border-zinc-300 dark:border-zinc-800">
+                    <button onclick="switchAuthMode('login')" id="tab-login" class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-zinc-800 shadow-sm transition">Anmelden</button>
+                    <button onclick="switchAuthMode('register')" id="tab-register" class="flex-1 py-2 text-sm font-semibold rounded-lg text-zinc-500 dark:text-zinc-400 transition">Registrieren</button>
+                </div>
+
+                <!-- Form -->
+                <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4">
+                    <div id="register-fields" class="space-y-4 hidden">
+                        <div>
+                            <label class="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">Dein Name</label>
+                            <input type="text" id="reg-name" placeholder="David" class="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:border-blue-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Wähle dein Spieler-Emoji</label>
+                            <div class="flex gap-2 justify-between" id="emoji-selector">
+                                <button type="button" onclick="selectEmoji('⚽️')" class="emoji-btn w-14 h-14 bg-white dark:bg-zinc-900 border-2 border-blue-600 rounded-xl text-2xl flex items-center justify-center">⚽️</button>
+                                <button type="button" onclick="selectEmoji('🤾‍♂️')" class="emoji-btn w-14 h-14 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl text-2xl flex items-center justify-center">🤾‍♂️</button>
+                                <button type="button" onclick="selectEmoji('🏊')" class="emoji-btn w-14 h-14 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl text-2xl flex items-center justify-center">🏊</button>
+                                <button type="button" onclick="selectEmoji('⚡️')" class="emoji-btn w-14 h-14 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl text-2xl flex items-center justify-center">⚡️</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">E-Mail-Adresse</label>
+                        <input type="email" id="auth-email" required placeholder="david@handball.de" class="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:border-blue-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">Passwort</label>
+                        <input type="password" id="auth-password" required placeholder="••••••••" class="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:border-blue-500 text-sm">
+                    </div>
+
+                    <button type="submit" id="auth-submit-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 rounded-xl transition shadow-lg shadow-blue-600/30 text-sm">
+                        Anmelden
+                    </button>
+                </form>
+            </div>
+            <div class="text-center text-xs text-zinc-400"> iOS Design • Buttermarkt-Events & Emojis</div>
+        </div>
+
+        <!-- TEAM SETUP SCREEN -->
+        <div id="team-screen" class="absolute inset-0 z-40 bg-iosBgLight dark:bg-iosBgDark flex flex-col justify-between px-6 py-12 overflow-y-auto no-scrollbar hidden">
+            <div class="space-y-6 pt-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold tracking-tight">Deine Vereine</h2>
+                        <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">Tritt mehreren Vereinen parallel bei oder gründe einen neuen.</p>
+                    </div>
+                    <button onclick="logout()" class="text-xs text-rose-500 font-semibold px-3 py-1.5 rounded-xl bg-rose-500/10">Abmelden</button>
+                </div>
+
+                <div class="p-5 rounded-2xl space-y-4 border border-zinc-300 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 shadow-md">
+                    <h3 class="text-sm font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Neuen Verein gründen</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Vereins- / Mannschaftsname</label>
+                            <input type="text" id="new-team-name" placeholder="z.B. VT Kempen mC-Jugend" class="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/60 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">1. Training (Tag & Zeit)</label>
+                                <select id="t1-day" class="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/60 rounded-xl px-2 py-2 text-xs mb-1">
+                                    <option value="Montag">Montag</option>
+                                    <option value="Dienstag" selected>Dienstag</option>
+                                    <option value="Mittwoch">Mittwoch</option>
+                                    <option value="Donnerstag">Donnerstag</option>
+                                    <option value="Freitag">Freitag</option>
+                                    <option value="Samstag">Samstag</option>
+                                    <option value="Sonntag">Sonntag</option>
+                                </select>
+                                <input type="text" id="t1-time" value="18:30 Uhr" class="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/60 rounded-xl px-2 py-2 text-xs text-center">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">2. Training (Tag & Zeit)</label>
+                                <select id="t2-day" class="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/60 rounded-xl px-2 py-2 text-xs mb-1">
+                                    <option value="Montag">Montag</option>
+                                    <option value="Dienstag">Dienstag</option>
+                                    <option value="Mittwoch">Mittwoch</option>
+                                    <option value="Donnerstag" selected>Donnerstag</option>
+                                    <option value="Freitag">Freitag</option>
+                                    <option value="Samstag">Samstag</option>
+                                    <option value="Sonntag">Sonntag</option>
+                                </select>
+                                <input type="text" id="t2-time" value="19:00 Uhr" class="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/60 rounded-xl px-2 py-2 text-xs text-center">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Treffpunkt / Parkplatz</label>
+                            <input type="text" id="new-team-meet" value="Sportpark-Parkplatz Süd" class="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/60 rounded-xl px-3 py-2.5 text-sm focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Halle / Sportstätte</label>
+                            <input type="text" id="new-team-hall" value="Ludwig-Jahn-Halle, Kempen" class="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/60 rounded-xl px-3 py-2.5 text-sm focus:outline-none">
+                        </div>
+                        <button onclick="createTeam()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl text-sm transition">
+                            Verein erstellen & beitreten
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">Verfügbare Vereine (Beitreten)</h3>
+                    <div id="team-list" class="space-y-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN APP CONTENT -->
+        <div id="main-content" class="flex-1 flex flex-col overflow-hidden hidden">
+
+            <!-- HEADER -->
+            <header class="px-6 pt-4 pb-3 flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800/60">
+                <div class="flex items-center gap-2">
+                    <select id="team-switcher" onchange="switchActiveTeam(this.value)" class="bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl px-2.5 py-1 text-xs font-bold text-blue-600 dark:text-blue-400 focus:outline-none">
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleDarkMode()" class="w-9 h-9 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-zinc-700 dark:text-zinc-300 transition">
+                        <i id="dark-icon" class="fa-solid fa-moon text-sm"></i>
+                    </button>
+                    <button onclick="openTeamSetup()" class="w-9 h-9 rounded-full bg-blue-600/20 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs font-bold" title="Vereine verwalten">+</button>
+                </div>
+            </header>
+
+            <!-- SCROLLABLE VIEWS -->
+            <main class="flex-1 overflow-y-auto no-scrollbar relative pb-24">
+
+                <!-- VIEW 1: HOME -->
+                <div id="view-home" class="p-6 space-y-6 view-section">
+                    
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Aktives Training</span>
+                            <h2 class="text-xl font-bold tracking-tight flex items-center gap-2 mt-0.5">
+                                Hallo <span id="user-display-name">David</span> <span id="user-display-emoji" class="cursor-pointer" onclick="switchTab('me')">⚽️</span>
+                            </h2>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">2x wöchentlich</span>
+                    </div>
+
+                    <!-- Nächstes Training -->
+                    <div class="rounded-3xl p-5 space-y-4 shadow-xl border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30">Training</span>
+                                <h3 class="text-lg font-bold mt-2" id="next-t1-date">Dienstag & Donnerstag</h3>
+                                <p class="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1 mt-0.5">
+                                    <i class="fa-solid fa-location-dot text-blue-500"></i> <span id="next-t1-hall">Ludwig-Jahn-Halle, Kempen</span>
+                                </p>
+                                <p class="text-[11px] text-zinc-400 dark:text-zinc-500 flex items-center gap-1 mt-0.5">
+                                    <i class="fa-solid fa-car-side text-emerald-500"></i> Treff: <span id="next-t1-meet">Sportpark-Parkplatz Süd</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Transport Auswahl -->
+                        <div class="pt-2 border-t border-zinc-200 dark:border-zinc-800/80">
+                            <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Wie kommst du zum Training?</p>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button onclick="setTransport('Fahrrad')" id="btn-bike" class="py-2.5 px-3 rounded-xl border border-zinc-300 dark:border-zinc-700/60 bg-zinc-100 dark:bg-zinc-900/60 text-xs font-medium flex items-center justify-center gap-1.5 transition">
+                                    <i class="fa-solid fa-bicycle text-emerald-500"></i> Fahrrad
+                                </button>
+                                <button onclick="setTransport('Auto')" id="btn-car" class="py-2.5 px-3 rounded-xl border border-zinc-300 dark:border-zinc-700/60 bg-zinc-100 dark:bg-zinc-900/60 text-xs font-medium flex items-center justify-center gap-1.5 transition">
+                                    <i class="fa-solid fa-car text-blue-500"></i> Auto
+                                </button>
+                                <button onclick="setTransport('Absage')" id="btn-absent" class="py-2.5 px-3 rounded-xl border border-zinc-300 dark:border-zinc-700/60 bg-zinc-100 dark:bg-zinc-900/60 text-xs font-medium flex items-center justify-center gap-1.5 transition">
+                                    <i class="fa-solid fa-xmark text-rose-500"></i> Absage
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Online Team Sichtbarkeit -->
+                    <div class="rounded-3xl p-5 space-y-3 border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-sm font-semibold">Wer kommt? (Live-Team)</h3>
+                            <span class="text-xs text-emerald-500 flex items-center gap-1 font-medium">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Online Sync
+                            </span>
+                        </div>
+                        <div id="team-attendance-list" class="space-y-2"></div>
+                    </div>
+
+                    <!-- Wetter & Buttermarkt-Ereignisse -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="rounded-3xl p-4 flex flex-col justify-between border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/70">
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Wetter Kempen</span>
+                                <i class="fa-solid fa-cloud-rain text-blue-500 text-lg"></i>
+                            </div>
+                            <div class="my-3">
+                                <div class="text-2xl font-bold">10°C</div>
+                                <div class="text-xs text-zinc-500 dark:text-zinc-400">Leichter Regen</div>
+                            </div>
+                            <div class="text-[10px] text-zinc-400">Fahrrad-Check beachten!</div>
+                        </div>
+
+                        <!-- WARN-FELD (Wird nur angezeigt, wenn Buttermarkt-Event ansteht) -->
+                        <div id="buttermarkt-warning-card" class="rounded-3xl p-4 flex flex-col justify-between border-amber-500/30 bg-white/70 dark:bg-zinc-900/70 hidden">
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-medium text-amber-500">Buttermarkt</span>
+                                <i class="fa-solid fa-triangle-exclamation text-amber-500 text-lg"></i>
+                            </div>
+                            <div class="my-2">
+                                <div id="buttermarkt-event-title" class="text-sm font-bold leading-snug">Ereignis</div>
+                                <div class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Innenstadt gesperrt</div>
+                            </div>
+                            <div class="text-[10px] text-amber-600 dark:text-amber-400">Route anpassen!</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- VIEW 2: MAPS -->
+                <div id="view-maps" class="p-6 space-y-4 hidden view-section">
+                    <h2 class="text-xl font-bold">Route zur Halle & Treffpunkt</h2>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Prüfe wegen Veranstaltungen auf dem Buttermarkt alternative Wege um den Ring.</p>
+                    
+                    <div class="rounded-3xl p-4 space-y-4 border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/70">
+                        <div class="h-48 rounded-2xl bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 relative overflow-hidden flex items-center justify-center">
+                            <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                            <div class="absolute text-center space-y-1">
+                                <i class="fa-solid fa-map-location-dot text-3xl text-blue-500 animate-bounce"></i>
+                                <div id="map-hall-label" class="text-xs font-medium text-zinc-700 dark:text-zinc-300">Ludwig-Jahn-Halle Kempen</div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-3 p-3 rounded-xl bg-zinc-100 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-500 flex items-center justify-center">
+                                    <i class="fa-solid fa-bicycle text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-xs font-semibold">Fahrrad-Route (über Grabenring)</div>
+                                    <div class="text-[10px] text-zinc-500 dark:text-zinc-400">ca. 12 Min • Ruhiger Weg</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 rounded-xl bg-zinc-100 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800">
+                                <div class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-500 flex items-center justify-center">
+                                    <i class="fa-solid fa-car text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-xs font-semibold">Auto-Route & Treffpunkt</div>
+                                    <div id="map-meet-label" class="text-[10px] text-zinc-500 dark:text-zinc-400">Sportpark-Parkplatz Süd</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 3: KALENDER -->
+                <div id="view-calendar" class="p-6 space-y-4 hidden view-section">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold">Wochenplan & Termine</h2>
+                        <button onclick="openNewEventModal()" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-xl font-medium shadow-md">
+                            + Spiel / Event
+                        </button>
+                    </div>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Beinhaltet automatisch eure 2 wöchentlichen Trainingstage sowie Sonderspiele.</p>
+
+                    <div id="calendar-events-list" class="space-y-3"></div>
+                </div>
+
+                <!-- VIEW 4: ME -->
+                <div id="view-me" class="p-6 space-y-6 hidden view-section">
+                    <div class="text-center space-y-3 pt-2">
+                        <div id="me-emoji" class="w-20 h-20 bg-blue-600/20 border border-blue-500/40 rounded-full mx-auto flex items-center justify-center text-4xl shadow-md">
+                            ⚽️
+                        </div>
+                        <div>
+                            <input type="text" id="edit-profile-name" onchange="updateProfileName(this.value)" class="text-center text-xl font-bold bg-transparent border-b border-zinc-400 dark:border-zinc-700 focus:outline-none focus:border-blue-500 pb-1 w-48 mx-auto block" value="David">
+                            <p class="text-xs text-blue-500 dark:text-blue-400 font-medium mt-1">Spielerprofil bearbeiten</p>
+                        </div>
+
+                        <div class="pt-2">
+                            <label class="block text-xs text-zinc-500 dark:text-zinc-400 mb-2">Spieler-Emoji ändern</label>
+                            <div class="flex gap-3 justify-center" id="me-emoji-picker">
+                                <button onclick="changeUserEmoji('⚽️')" class="w-12 h-12 rounded-xl bg-zinc-200 dark:bg-zinc-800 text-xl flex items-center justify-center">⚽️</button>
+                                <button onclick="changeUserEmoji('🤾‍♂️')" class="w-12 h-12 rounded-xl bg-zinc-200 dark:bg-zinc-800 text-xl flex items-center justify-center">🤾‍♂️</button>
+                                <button onclick="changeUserEmoji('🏊')" class="w-12 h-12 rounded-xl bg-zinc-200 dark:bg-zinc-800 text-xl flex items-center justify-center">🏊</button>
+                                <button onclick="changeUserEmoji('⚡️')" class="w-12 h-12 rounded-xl bg-zinc-200 dark:bg-zinc-800 text-xl flex items-center justify-center">⚡️</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-3xl p-5 space-y-3 border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/70">
+                        <h3 class="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">iPhone PWA Installation</h3>
+                        <p class="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                            Tippe im Safari-Browser unten auf das <i class="fa-solid fa-arrow-up-from-bracket text-blue-500"></i> **Teilen**-Symbol und wähle **„Zum Home-Bildschirm“**.
+                        </p>
+                    </div>
+
+                    <button onclick="logout()" class="w-full bg-zinc-200 dark:bg-zinc-900 border border-rose-500/30 text-rose-500 font-semibold py-3.5 rounded-2xl text-sm transition hover:bg-rose-500/10">
+                        Aus dem Konto abmelden
+                    </button>
+                </div>
+
+            </main>
+
+            <!-- IOS TABBAR UNTEN -->
+            <nav id="bottom-nav" class="absolute bottom-0 left-0 right-0 glass-nav-dark h-20 px-4 pb-4 flex justify-around items-center z-30 transition-colors duration-300">
+                <button onclick="switchTab('home')" id="tab-btn-home" class="flex flex-col items-center gap-1 text-blue-500 transition">
+                    <i class="fa-solid fa-house text-lg"></i>
+                    <span class="text-[10px] font-medium">Home</span>
+                </button>
+                <button onclick="switchTab('maps')" id="tab-btn-maps" class="flex flex-col items-center gap-1 text-zinc-400 transition">
+                    <i class="fa-solid fa-map text-lg"></i>
+                    <span class="text-[10px] font-medium">Maps</span>
+                </button>
+                <button onclick="switchTab('calendar')" id="tab-btn-calendar" class="flex flex-col items-center gap-1 text-zinc-400 transition">
+                    <i class="fa-solid fa-calendar-days text-lg"></i>
+                    <span class="text-[10px] font-medium">Kalender</span>
+                </button>
+                <button onclick="switchTab('me')" id="tab-btn-me" class="flex flex-col items-center gap-1 text-zinc-400 transition">
+                    <i class="fa-solid fa-user text-lg"></i>
+                    <span class="text-[10px] font-medium">Me</span>
+                </button>
+            </nav>
+
+        </div>
+
+        <!-- MODAL: Sonderspiel / Event -->
+        <div id="event-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-6 hidden">
+            <div class="rounded-3xl p-6 w-full max-w-sm space-y-4 border border-zinc-700 bg-zinc-900 text-white shadow-2xl">
+                <h3 class="text-lg font-bold">Sonderspiel / Event eintragen</h3>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs text-zinc-400 mb-1">Titel</label>
+                        <input type="text" id="modal-event-title" value="Auswärtsspiel in Düsseldorf" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-zinc-400 mb-1">Datum & Uhrzeit</label>
+                        <input type="text" id="modal-event-date" value="Sa., 21. Nov. • 16:00 Uhr" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-zinc-400 mb-1">Halle / Ort</label>
+                        <input type="text" id="modal-event-location" value="Sporthalle Düsseldorf" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm">
+                    </div>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button onclick="closeNewEventModal()" class="flex-1 bg-zinc-800 text-zinc-300 font-semibold py-3 rounded-xl text-sm">Abbrechen</button>
+                    <button onclick="saveNewEvent()" class="flex-1 bg-blue-600 text-white font-semibold py-3 rounded-xl text-sm">Speichern</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- LOGIC SCRIPT -->
+    <script>
+        let authMode = 'login';
+        let selectedEmoji = '⚽️';
+        let currentUser = null;
+        let currentTeamId = null;
+        let isDarkMode = localStorage.getItem('handball_dark') !== 'false';
+
+        let teamsDB = JSON.parse(localStorage.getItem('handball_teams_v5') || '[]');
+        let membersDB = JSON.parse(localStorage.getItem('handball_members_v5') || '{}');
+        let eventsDB = JSON.parse(localStorage.getItem('handball_events_v5') || '{}');
+
+        window.onload = function() {
+            applyTheme();
+            checkButtermarktEvents();
+            const savedUser = localStorage.getItem('handball_current_user_v5');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                if (currentUser.teams && currentUser.teams.length > 0) {
+                    currentTeamId = currentUser.activeTeam || currentUser.teams[0];
+                }
+                checkTeamAndRoute();
+            } else {
+                showAuthScreen();
+            }
+        };
+
+        function checkButtermarktEvents() {
+            const warningCard = document.getElementById('buttermarkt-warning-card');
+            const titleEl = document.getElementById('buttermarkt-event-title');
+            
+            const now = new Date();
+            const month = now.getMonth();
+            const day = now.getDate();
+            const dayOfWeek = now.getDay();
+
+            let activeEvent = null;
+
+            if (month >= 4 && month <= 8 && dayOfWeek === 3 && day <= 7) {
+                activeEvent = "Feierabend-Markt";
+            } else if (month === 3 && day >= 10 && day <= 12) {
+                activeEvent = "Frühlingsfest";
+            } else if (month === 8 && day >= 25 && day <= 27) {
+                activeEvent = "Herbstfest";
+            } else if (month === 10 && day === 3) {
+                activeEvent = "Hubertusmarkt";
+            }
+
+            if (activeEvent) {
+                titleEl.innerText = activeEvent;
+                warningCard.classList.remove('hidden');
+            } else {
+                warningCard.classList.add('hidden');
+            }
+        }
+
+        function applyTheme() {
+            const htmlEl = document.documentElement;
+            const navEl = document.getElementById('bottom-nav');
+            const darkIcon = document.getElementById('dark-icon');
+            if (isDarkMode) {
+                htmlEl.classList.add('dark');
+                if(navEl) navEl.className = "absolute bottom-0 left-0 right-0 glass-nav-dark h-20 px-4 pb-4 flex justify-around items-center z-30 transition-colors duration-300";
+                if(darkIcon) darkIcon.className = "fa-solid fa-sun text-sm";
+            } else {
+                htmlEl.classList.remove('dark');
+                if(navEl) navEl.className = "absolute bottom-0 left-0 right-0 glass-nav-light h-20 px-4 pb-4 flex justify-around items-center z-30 transition-colors duration-300";
+                if(darkIcon) darkIcon.className = "fa-solid fa-moon text-sm";
+            }
+            localStorage.setItem('handball_dark', isDarkMode);
+        }
+
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            applyTheme();
+        }
+
+        function switchAuthMode(mode) {
+            authMode = mode;
+            const regFields = document.getElementById('register-fields');
+            const submitBtn = document.getElementById('auth-submit-btn');
+            const tabLogin = document.getElementById('tab-login');
+            const tabRegister = document.getElementById('tab-register');
+
+            if (mode === 'register') {
+                regFields.classList.remove('hidden');
+                submitBtn.innerText = "Konto erstellen & weiter";
+                tabRegister.className = "flex-1 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-zinc-800 shadow-sm transition";
+                tabLogin.className = "flex-1 py-2 text-sm font-semibold rounded-lg text-zinc-500 dark:text-zinc-400 transition";
+            } else {
+                regFields.classList.add('hidden');
+                submitBtn.innerText = "Anmelden";
+                tabLogin.className = "flex-1 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-zinc-800 shadow-sm transition";
+                tabRegister.className = "flex-1 py-2 text-sm font-semibold rounded-lg text-zinc-500 dark:text-zinc-400 transition";
+            }
+        }
+
+        function selectEmoji(emoji) {
+            selectedEmoji = emoji;
+            document.querySelectorAll('.emoji-btn').forEach(btn => {
+                btn.classList.remove('border-blue-600');
+                btn.classList.add('border-zinc-300', 'dark:border-zinc-800');
+            });
+            event.currentTarget.classList.remove('border-zinc-300', 'dark:border-zinc-800');
+            event.currentTarget.classList.add('border-blue-600');
+        }
+
+        function handleAuth(e) {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value;
+            const nameInput = document.getElementById('reg-name').value;
+            const name = authMode === 'register' && nameInput ? nameInput : email.split('@')[0];
+
+            currentUser = {
+                email: email,
+                name: name.charAt(0).toUpperCase() + name.slice(1),
+                emoji: selectedEmoji,
+                teams: [],
+                activeTeam: null
+            };
+
+            localStorage.setItem('handball_current_user_v5', JSON.stringify(currentUser));
+            checkTeamAndRoute();
+        }
+
+        function checkTeamAndRoute() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            
+            if (!currentUser.teams || currentUser.teams.length === 0) {
+                document.getElementById('team-screen').classList.remove('hidden');
+                document.getElementById('main-content').classList.add('hidden');
+                renderTeamList();
+            } else {
+                document.getElementById('team-screen').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                initMainApp();
+            }
+        }
+
+        function openTeamSetup() {
+            document.getElementById('team-screen').classList.remove('hidden');
+            document.getElementById('main-content').classList.add('hidden');
+            renderTeamList();
+        }
+
+        function renderTeamList() {
+            const listEl = document.getElementById('team-list');
+            if (teamsDB.length === 0) {
+                listEl.innerHTML = `<div class="text-xs text-zinc-500 text-center py-4">Noch kein Verein vorhanden. Grüne oben deinen ersten Verein!</div>`;
+                return;
+            }
+            listEl.innerHTML = teamsDB.map(t => {
+                const isMember = currentUser.teams.includes(t.id);
+                return `
+                    <div class="p-4 rounded-2xl flex justify-between items-center border border-zinc-300 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50">
+                        <div>
+                            <div class="text-sm font-bold">${t.name}</div>
+                            <div class="text-xs text-zinc-500 dark:text-zinc-400">1: ${t.t1Day} ${t.t1Time} | 2: ${t.t2Day} ${t.t2Time}</div>
+                            <div class="text-[10px] text-zinc-400">Halle: ${t.hall}</div>
+                        </div>
+                        <button onclick="joinTeam('${t.id}')" class="px-3 py-1.5 rounded-xl text-xs font-semibold ${isMember ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300' : 'bg-blue-600 text-white'}">
+                            ${isMember ? 'Aktiv / Beigetreten' : 'Beitreten'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function createTeam() {
+            const name = document.getElementById('new-team-name').value;
+            if (!name) return alert('Bitte Vereinsnamen eingeben.');
+            
+            const newTeam = {
+                id: 'team_' + Date.now(),
+                name: name,
+                t1Day: document.getElementById('t1-day').value,
+                t1Time: document.getElementById('t1-time').value,
+                t2Day: document.getElementById('t2-day').value,
+                t2Time: document.getElementById('t2-time').value,
+                meet: document.getElementById('new-team-meet').value,
+                hall: document.getElementById('new-team-hall').value
+            };
+
+            teamsDB.push(newTeam);
+            localStorage.setItem('handball_teams_v5', JSON.stringify(teamsDB));
+
+            eventsDB[newTeam.id] = [
+                { id: '1', title: `Training (${newTeam.t1Day})`, date: `${newTeam.t1Day} • ${newTeam.t1Time}`, location: newTeam.hall },
+                { id: '2', title: `Training (${newTeam.t2Day})`, date: `${newTeam.t2Day} • ${newTeam.t2Time}`, location: newTeam.hall }
+            ];
+            localStorage.setItem('handball_events_v5', JSON.stringify(eventsDB));
+
+            joinTeam(newTeam.id);
+        }
+
+        function joinTeam(teamId) {
+            if (!currentUser.teams.includes(teamId)) {
+                currentUser.teams.push(teamId);
+            }
+            currentUser.activeTeam = teamId;
+            currentTeamId = teamId;
+            localStorage.setItem('handball_current_user_v5', JSON.stringify(currentUser));
+            checkTeamAndRoute();
+        }
+
+        function switchActiveTeam(teamId) {
+            currentTeamId = teamId;
+            currentUser.activeTeam = teamId;
+            localStorage.setItem('handball_current_user_v5', JSON.stringify(currentUser));
+            initMainApp();
+        }
+
+        function initMainApp() {
+            const switcher = document.getElementById('team-switcher');
+            switcher.innerHTML = currentUser.teams.map(tId => {
+                const t = teamsDB.find(x => x.id === tId);
+                return t ? `<option value="${t.id}" ${t.id === currentTeamId ? 'selected' : ''}>${t.name}</option>` : '';
+            }).join('');
+
+            const currentTeam = teamsDB.find(t => t.id === currentTeamId);
+            if (!currentTeam) {
+                currentUser.teams = [];
+                checkTeamAndRoute();
+                return;
+            }
+
+            document.getElementById('user-display-name').innerText = currentUser.name;
+            document.getElementById('user-display-emoji').innerText = currentUser.emoji;
+            document.getElementById('edit-profile-name').value = currentUser.name;
+            document.getElementById('me-emoji').innerText = currentUser.emoji;
+
+            document.getElementById('next-t1-date').innerText = `${currentTeam.t1Day} & ${currentTeam.t2Day} wöchentlich`;
+            document.getElementById('next-t1-hall').innerText = currentTeam.hall;
+            document.getElementById('next-t1-meet').innerText = currentTeam.meet;
+
+            document.getElementById('map-hall-label').innerText = currentTeam.hall;
+            document.getElementById('map-meet-label').innerText = currentTeam.meet;
+
+            if (!membersDB[currentTeam.id]) membersDB[currentTeam.id] = {};
+            if (!membersDB[currentTeam.id][currentUser.email]) {
+                membersDB[currentTeam.id][currentUser.email] = { name: currentUser.name, emoji: currentUser.emoji, transport: 'Fahrrad' };
+            }
+            
+            membersDB[currentTeam.id][currentUser.email].name = currentUser.name;
+            membersDB[currentTeam.id][currentUser.email].emoji = currentUser.emoji;
+            localStorage.setItem('handball_members_v5', JSON.stringify(membersDB));
+
+            updateTransportUI(membersDB[currentTeam.id][currentUser.email].transport);
+            renderAttendance();
+            renderCalendarEvents();
+        }
+
+        function setTransport(mode) {
+            membersDB[currentTeamId][currentUser.email].transport = mode;
+            localStorage.setItem('handball_members_v5', JSON.stringify(membersDB));
+            updateTransportUI(mode);
+            renderAttendance();
+        }
+
+        function updateTransportUI(transport) {
+            ['bike', 'car', 'absent'].forEach(id => {
+                const el = document.getElementById(`btn-${id}`);
+                el.className = "py-2.5 px-3 rounded-xl border border-zinc-300 dark:border-zinc-700/60 bg-zinc-100 dark:bg-zinc-900/60 text-xs font-medium flex items-center justify-center gap-1.5 transition";
+            });
+
+            if (transport === 'Fahrrad') {
+                document.getElementById('btn-bike').className = "py-2.5 px-3 rounded-xl border border-emerald-500 bg-emerald-500/20 text-xs font-semibold text-emerald-600 dark:text-emerald-300 flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20 transition";
+            } else if (transport === 'Auto') {
+                document.getElementById('btn-car').className = "py-2.5 px-3 rounded-xl border border-blue-500 bg-blue-500/20 text-xs font-semibold text-blue-600 dark:text-blue-300 flex items-center justify-center gap-1.5 shadow-lg shadow-blue-500/20 transition";
+            } else {
+                document.getElementById('btn-absent').className = "py-2.5 px-3 rounded-xl border border-rose-500 bg-rose-500/20 text-xs font-semibold text-rose-600 dark:text-rose-300 flex items-center justify-center gap-1.5 shadow-lg shadow-rose-500/20 transition";
+            }
+        }
+
+        function renderAttendance() {
+            const listEl = document.getElementById('team-attendance-list');
+            const teamMembers = membersDB[currentTeamId] || {};
+            const entries = Object.values(teamMembers);
+
+            listEl.innerHTML = entries.map(m => {
+                let badge = '';
+                if (m.transport === 'Fahrrad') badge = '<span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-medium"><i class="fa-solid fa-bicycle"></i> Fahrrad</span>';
+                else if (m.transport === 'Auto') badge = '<span class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-600 dark:text-blue-400 text-[10px] font-medium"><i class="fa-solid fa-car"></i> Auto</span>';
+                else badge = '<span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-600 dark:text-rose-400 text-[10px] font-medium"><i class="fa-solid fa-xmark"></i> Absage</span>';
+
+                return `
+                    <div class="flex justify-between items-center py-2 px-3 rounded-xl bg-zinc-100 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/60">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-base">${m.emoji}</span>
+                            <span class="text-xs font-medium">${m.name}</span>
+                        </div>
+                        <div>${badge}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderCalendarEvents() {
+            const listEl = document.getElementById('calendar-events-list');
+            const events = eventsDB[currentTeamId] || [];
+
+            listEl.innerHTML = events.map(ev => `
+                <div class="p-4 rounded-2xl flex justify-between items-center border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/70">
+                    <div>
+                        <div class="text-xs font-semibold text-blue-600 dark:text-blue-400">${ev.date}</div>
+                        <div class="text-sm font-bold mt-0.5">${ev.title}</div>
+                        <div class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1"><i class="fa-solid fa-location-dot"></i> ${ev.location}</div>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-lg bg-zinc-200 dark:bg-zinc-800 text-[10px] font-medium">Aktiv</span>
+                </div>
+            `).join('');
+        }
+
+        function updateProfileName(newName) {
+            if(!newName) return;
+            currentUser.name = newName;
+            localStorage.setItem('handball_current_user_v5', JSON.stringify(currentUser));
+            initMainApp();
+        }
+
+        function changeUserEmoji(emoji) {
+            currentUser.emoji = emoji;
+            localStorage.setItem('handball_current_user_v5', JSON.stringify(currentUser));
+            initMainApp();
+        }
+
+        function openNewEventModal() {
+            document.getElementById('event-modal').classList.remove('hidden');
+        }
+
+        function closeNewEventModal() {
+            document.getElementById('event-modal').classList.add('hidden');
+        }
+
+        function saveNewEvent() {
+            const title = document.getElementById('modal-event-title').value;
+            const date = document.getElementById('modal-event-date').value;
+            const location = document.getElementById('modal-event-location').value;
+
+            if (!eventsDB[currentTeamId]) eventsDB[currentTeamId] = [];
+            eventsDB[currentTeamId].push({ id: 'ev_' + Date.now(), title, date, location });
+            localStorage.setItem('handball_events_v5', JSON.stringify(eventsDB));
+
+            closeNewEventModal();
+            renderCalendarEvents();
+        }
+
+        function switchTab(tab) {
+            ['home', 'maps', 'calendar', 'me'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                document.getElementById(`tab-btn-${t}`).className = "flex flex-col items-center gap-1 text-zinc-400 transition";
+            });
+
+            document.getElementById(`view-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-btn-${tab}`).className = "flex flex-col items-center gap-1 text-blue-500 transition";
+        }
+
+        function logout() {
+            localStorage.removeItem('handball_current_user_v5');
+            currentUser = null;
+            location.reload();
+        }
+    </script>
+</body>
+</html>
